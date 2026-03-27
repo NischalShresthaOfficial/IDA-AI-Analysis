@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Usage Survey Analytics</title>
+  <style>
+    :root {
+      --bg: #f4efe7;
+      --bg-strong: #efe4d2;
+      --surface: rgba(255, 252, 247, 0.82);
+      --surface-strong: #fffaf2;
+      --ink: #1f1b16;
+      --muted: #62594f;
+      --accent: #0f766e;
+      --accent-2: #d97706;
+      --accent-3: #7c3aed;
+      --line: rgba(31, 27, 22, 0.1);
+      --shadow: 0 18px 50px rgba(73, 51, 24, 0.12);
+      --radius: 24px;
+      --radius-sm: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.16), transparent 30%),
+        radial-gradient(circle at top right, rgba(217, 119, 6, 0.15), transparent 25%),
+        linear-gradient(180deg, #f9f4ed 0%, var(--bg) 60%, #f7f0e4 100%);
+      min-height: 100vh;
+    }
+
+    body.printing {
+      background: #fff;
+    }
+
+    .page {
+      width: min(1200px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero,
+    .panel {
+      background: var(--surface);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -40px -50px auto;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124, 58, 237, 0.16) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.08);
+      color: var(--accent);
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      font-weight: 600;
+      line-height: 1.05;
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 5vw, 4.5rem);
+      max-width: 10ch;
+      margin-top: 18px;
+    }
+
+    .hero p {
+      margin: 18px 0 0;
+      max-width: 70ch;
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.65;
+    }
+
+    .toolbar {
+      margin-top: 26px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .upload {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: #fff;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .floating-export {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 20;
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 18px;
+      background: linear-gradient(135deg, var(--ink), #31403f);
+      color: #fff;
+      box-shadow: 0 18px 40px rgba(31, 27, 22, 0.22);
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .floating-export:hover {
+      transform: translateY(-1px);
+    }
+
+    .upload input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .meta span {
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 999px;
+      border: 1px solid var(--line);
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tab-button {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font: inherit;
+      transition: transform 140ms ease, background 140ms ease, color 140ms ease;
+    }
+
+    .tab-button:hover {
+      transform: translateY(-1px);
+    }
+
+    .tab-button.active {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    .two-col {
+      grid-template-columns: 1.2fr 0.8fr;
+    }
+
+    .three-col {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    .panel {
+      padding: 24px;
+    }
+
+    .stat-card {
+      padding: 22px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(180deg, rgba(255,255,255,0.82), rgba(255,250,242,0.96));
+      border: 1px solid var(--line);
+    }
+
+    .stat-label {
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .stat-value {
+      margin-top: 10px;
+      font-size: clamp(1.9rem, 4vw, 3rem);
+    }
+
+    .stat-note {
+      margin-top: 10px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    .section-title p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      max-width: 64ch;
+      line-height: 1.6;
+    }
+
+    .chip-list,
+    .insight-list,
+    .person-list,
+    .division-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .chip-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.08);
+      border: 1px solid rgba(15, 118, 110, 0.12);
+      font-size: 0.95rem;
+    }
+
+    .chip strong {
+      font-size: 1rem;
+    }
+
+    .insight,
+    .person-card,
+    .division-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .insight h3,
+    .person-card h3,
+    .division-card h3 {
+      font-size: 1.15rem;
+    }
+
+    .insight p,
+    .person-card p,
+    .division-card p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .bar-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 180px 1fr 52px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .bar-row .label {
+      font-size: 0.95rem;
+    }
+
+    .bar-track {
+      height: 12px;
+      background: rgba(31, 27, 22, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), #22c55e);
+    }
+
+    .bar-fill.warn {
+      background: linear-gradient(90deg, var(--accent-2), #f59e0b);
+    }
+
+    .bar-fill.alt {
+      background: linear-gradient(90deg, var(--accent-3), #a855f7);
+    }
+
+    .quote {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-left: 3px solid var(--accent);
+      background: rgba(15, 118, 110, 0.06);
+      border-radius: 0 14px 14px 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .score-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(217, 119, 6, 0.1);
+      color: #9a5a03;
+      font-size: 0.85rem;
+      margin-top: 12px;
+    }
+
+    .matrix {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.92rem;
+    }
+
+    .matrix th,
+    .matrix td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .matrix td {
+      line-height: 1.55;
+    }
+
+    .matrix th {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .response-cell {
+      min-width: 240px;
+      white-space: normal;
+    }
+
+    .people-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .qa-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .qa-item {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.68);
+    }
+
+    .qa-question {
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .qa-answer {
+      line-height: 1.6;
+      color: var(--ink);
+      white-space: pre-wrap;
+    }
+
+    .footnote {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    .empty {
+      padding: 22px;
+      border-radius: var(--radius-sm);
+      border: 1px dashed var(--line);
+      color: var(--muted);
+      background: rgba(255,255,255,0.45);
+    }
+
+    @media (max-width: 900px) {
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+
+      .bar-row {
+        grid-template-columns: 1fr;
+      }
+
+      .bar-row .label,
+      .bar-row .value {
+        font-size: 0.92rem;
+      }
+    }
+
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 12mm;
+      }
+
+      body {
+        background: #fff;
+      }
+
+      .page {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .hero,
+      .panel,
+      .stat-card,
+      .person-card,
+      .division-card,
+      .qa-item {
+        box-shadow: none;
+        backdrop-filter: none;
+        background: #fff;
+        border-color: rgba(0, 0, 0, 0.12);
+      }
+
+      .floating-export,
+      .upload {
+        display: none !important;
+      }
+
+      .grid.two-col,
+      .people-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .panel,
+      .hero,
+      .stat-card,
+      .person-card,
+      .division-card,
+      .qa-item {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button id="download-pdf" class="floating-export" type="button">Download PDF</button>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">AI Survey Dashboard</div>
+      <h1>Static analytics for your team responses.</h1>
+      <p>
+        This dashboard parses your survey workbook, turns free-text responses into theme-level signals,
+        and highlights both division-specific patterns and respondent similarities across the whole dataset.
+      </p>
+      <div class="toolbar">
+        <label class="upload">
+          <span>Upload another CSV</span>
+          <input id="csv-upload" type="file" accept=".csv,text/csv">
+        </label>
+        <div class="meta" id="meta"></div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top: 20px;">
+      <div class="section-title">
+        <div>
+          <h2>Division tabs</h2>
+          <p>Switch between the full company view and each worksheet tab to see the right division context.</p>
+        </div>
+      </div>
+      <div class="tabs" id="division-tabs"></div>
+    </section>
+
+    <section class="grid stats-grid" id="stats"></section>
+
+    <section class="grid two-col">
+      <div class="panel">
+        <div class="section-title">
+          <div>
+            <h2>Shared patterns</h2>
+            <p>High-level themes detected across time sinks, repeated work, and AI opportunity areas.</p>
+          </div>
+        </div>
+        <div class="chip-wrap" id="theme-chips"></div>
+        <div class="bar-list" id="theme-bars"></div>
+      </div>
+      <div class="panel">
+        <div class="section-title">
+          <div>
+            <h2>Consensus and caution</h2>
+            <p>Where the team strongly agrees and where responses introduce guardrails or skepticism.</p>
+          </div>
+        </div>
+        <div class="insight-list" id="insights"></div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top: 20px;">
+      <div class="section-title">
+        <div>
+          <h2>Division analytics</h2>
+          <p>Each division card summarizes headcount, repeated-task prevalence, strongest themes, and attitude toward AI assistance.</p>
+        </div>
+      </div>
+      <div class="division-list" id="divisions"></div>
+    </section>
+
+    <section class="grid two-col" style="margin-top: 20px;">
+      <div class="panel">
+        <div class="section-title">
+          <div>
+            <h2>Similarity among individuals</h2>
+            <p>Pairs are scored from shared language across all long-form responses, not just one question.</p>
+          </div>
+        </div>
+        <div class="person-list" id="similarity-cards"></div>
+      </div>
+      <div class="panel">
+        <div class="section-title">
+          <div>
+            <h2>Notable differences</h2>
+            <p>These signals surface contrast in optimism, repeatability, and concern areas regardless of division.</p>
+          </div>
+        </div>
+        <div class="person-list" id="difference-cards"></div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top: 20px;">
+      <div class="section-title">
+        <div>
+          <h2>Respondent explorer</h2>
+          <p id="explorer-copy">Every respondent is shown with their full answers so you can inspect the raw survey text directly inside the dashboard.</p>
+        </div>
+      </div>
+      <div class="people-grid" id="people-cards"></div>
+    </section>
+  </main>
+
+  <script>
+    const DEFAULT_WORKBOOK = [{"division":"IDE","questions":["Which parts of development take the most time?","Would AI tools for code generation, debugging, or testing improve productivity?","Do you frequently perform similar tasks repeatedly across projects?","Which development tasks could benefit from AI-assisted coding (code generation, debugging, or refactoring)?","Could AI help with automated testing, bug detection, or code reviews in your development workflow?"],"responses":[{"name":"Nischal Shrestha","responses":{"Which parts of development take the most time?":"Project Analysis takes the most time as analyzing the scope of the \nproject along with planning the timelines is usually tricky","Would AI tools for code generation, debugging, or testing improve productivity?":"For low to medium complex features, AI can be very handy at code generation, for debugging its a hit or miss and based on knowledge and skillset of the developer, productivity can be doubled","Do you frequently perform similar tasks repeatedly across projects?":"Not really some minor logics can be similar, but in most cases the code are quite different","Which development tasks could benefit from AI-assisted coding (code generation, debugging, or refactoring)?":"Generating simple to less complex logics, writing test cases, writing scripts, creating user guides and documentation can be highly benefited through the use of AI","Could AI help with automated testing, bug detection, or code reviews in your development workflow?":"Yes it does and I use it on a daily basis"}},{"name":"Neha Sharma","responses":{"Which parts of development take the most time?":"Requirement Analysis, Testing, Documentation, Debugging Issues takes most time so can use AI Tools for these.","Would AI tools for code generation, debugging, or testing improve productivity?":"Yes, It improves productivity but needs skills too to understand it because sometimes AI can be wrong, We needs skills to differentiate what is right code and what is wrong but its useful when we know but dont need to write all by ourself","Do you frequently perform similar tasks repeatedly across projects?":"Yes, Like for Admin Panel - most websites have blogs, contacts, inquiries, similar sections which can be reused. Also User Guide for admin can be reused too","Which development tasks could benefit from AI-assisted coding (code generation, debugging, or refactoring)?":"Code refactoring, Write test cases, Sprint Planning, write simple code for minor projects.","Could AI help with automated testing, bug detection, or code reviews in your development workflow?":"Yes, AI does help to debug code, write test cases."}},{"name":"Priti Maharjan","responses":{"Which parts of development take the most time?":"Understanding project requirements,UI implementation and resolving integration issues usually take the most time during development","Would AI tools for code generation, debugging, or testing improve productivity?":"AI tools can improve productivity by generating boilerplate code, suggesting fixes, and speeding up development workflows. However,  review is still necessary","Do you frequently perform similar tasks repeatedly across projects?":"Yes, some patterns like form handling, API calls, validation logic, and layout components tend to repeat across projects.","Which development tasks could benefit from AI-assisted coding (code generation, debugging, or refactoring)?":"Generating boilerplate components, refactoring existing code, writing documentation could benefit from AI assistance.","Could AI help with automated testing, bug detection, or code reviews in your development workflow?":"Yes,"}},{"name":"Abhishek Raj Poudel","responses":{"Which parts of development take the most time?":"As we bring more and more projects i have seen working and finallizing and QA work of UI takes the most time of time all","Would AI tools for code generation, debugging, or testing improve productivity?":"Yes some AI tools that could give me multiple variations of the sma page (eg landing page), would vastly increase our time taken to develop UI.","Do you frequently perform similar tasks repeatedly across projects?":"Yes, although all the projects end up being different the initial setup and process do tend to be similar","Which development tasks could benefit from AI-assisted coding (code generation, debugging, or refactoring)?":"UI/UX prototyping and AB testing. everything thing else has already been mentioned above","Could AI help with automated testing, bug detection, or code reviews in your development workflow?":"Yes"}},{"name":"Rojit Pokharel","responses":{"Which parts of development take the most time?":"Changing client requirements often takes more time because we first need to determine whether the new requirements are feasible or not.\nArchitecture and design decisions for projects with different objectives require extensive brainstorming and often lead to conflicts.","Would AI tools for code generation, debugging, or testing improve productivity?":"AI tools can improve productivity; however, testing and debugging with AI can sometimes become more complex. This happens because the way developers think, structure logic, and implement solutions may conflict with AI-generated approaches. As a result, the project can become less scalable and more difficult to debug and maintain.","Do you frequently perform similar tasks repeatedly across projects?":"Some tasks-such as the initial setup of projects with similar stacks, simple tasks like CRUD operations, and API integration-are repetitive. However, the scope and objectives of each project are often different.","Which development tasks could benefit from AI-assisted coding (code generation, debugging, or refactoring)?":"Code generation and refactoring can help fulfill project requirements, but if not properly monitored, the logic generated by AI may introduce loopholes and potential security vulnerabilities.","Could AI help with automated testing, bug detection, or code reviews in your development workflow?":"Yes"}},{"name":"Aditya Shrestha","responses":{"Which parts of development take the most time?":"Bug fixing, modifying, adding features as the project gets larger and more complex, accounting for change in scope, ideating and designing, accounting for lack of planning","Would AI tools for code generation, debugging, or testing improve productivity?":"Yes can make initial development and spitting out code easy and technically more 'productive' but gets progressively harder as the project scale increases","Do you frequently perform similar tasks repeatedly across projects?":"During initial setup, setting up dependancies, styling preferences, project structure is repeated, and for projects that I have been involved in - they've been similar to do.","Which development tasks could benefit from AI-assisted coding (code generation, debugging, or refactoring)?":"Planning and ideating, refactoring","Could AI help with automated testing, bug detection, or code reviews in your development workflow?":"I haven't used AI for testing or bug detection as of yet, but it does help with reviewing code structure and finding optimal / best practices."}},{"name":"Sudip Kumar Uraw","responses":{"Which parts of development take the most time?":"New website design layout (3d website, Mordern Layout website, 3d transition animation) and its implementation in development.","Would AI tools for code generation, debugging, or testing improve productivity?":"Yes, AI tools would improve productivity by accelerating the development and implementation of a new website design layout, including modern 3D interfaces and transition animations, through faster code generation and debugging","Do you frequently perform similar tasks repeatedly across projects?":"Not yet, but for learning and preparing for future projects. As modern 3D website layouts and transition animations are becoming increasingly popular, I expect to work on similar tasks more frequently moving forward.","Which development tasks could benefit from AI-assisted coding (code generation, debugging, or refactoring)?":"Tasks such as building modern 3D website layouts, implementing transition animations, optimizing code structure, and debugging UI/UX issues could benefit from AI-assisted coding.","Could AI help with automated testing, bug detection, or code reviews in your development workflow?":"Yes"}},{"name":"Sabina Pandey","responses":{"Which parts of development take the most time?":"Understanding the scope of project.","Would AI tools for code generation, debugging, or testing improve productivity?":"Yes, It can quickly point out common mistakes (syntax errors, logic issues).","Do you frequently perform similar tasks repeatedly across projects?":"No","Which development tasks could benefit from AI-assisted coding (code generation, debugging, or refactoring)?":"Error Correction, Documentation","Could AI help with automated testing, bug detection, or code reviews in your development workflow?":"Yes"}},{"name":"Suvkshya Khadka","responses":{"Which parts of development take the most time?":"Searching through old teams messages, gitlab  code, docs, just to find out specific file path or version used in the past .","Would AI tools for code generation, debugging, or testing improve productivity?":"Yes, because AI can instantly scan and saving hours of research or patterns.","Do you frequently perform similar tasks repeatedly across projects?":"yes , Ai may helps by \"recording \" those repetative task .","Which development tasks could benefit from AI-assisted coding (code generation, debugging, or refactoring)?":"Writing and updating the moments you finish typing then.","Could AI help with automated testing, bug detection, or code reviews in your development workflow?":"yes, AI stops wasting time swtiching between tabs hunts for versions, file paths, or updates."}},{"name":"Puja Shah","responses":{"Which parts of development take the most time?":"Design Research","Would AI tools for code generation, debugging, or testing improve productivity?":"Yes","Do you frequently perform similar tasks repeatedly across projects?":"Yes, ui designs are reused.","Which development tasks could benefit from AI-assisted coding (code generation, debugging, or refactoring)?":"Custom CSS for Elementor sections; Small JS interactions; PHP snippets (functions.php, hooks); Shortcodes and custom logic; Fixing layout breaking issues; CSS conflicts; JavaScript errors; Plugin conflicts; WordPress warnings/errors, etc.","Could AI help with automated testing, bug detection, or code reviews in your development workflow?":"Yes"}}]},{"division":"SEO","questions":["How do you currently research keywords and competitors?","Would AI help with content optimization, keyword suggestions, or technical SEO fixes?","How often do you optimize website content for search engines?","Could AI assist in identifying technical SEO issues on the website automatically?","Could AI provide content gap analysis and ranking improvement suggestions?"],"responses":[{"name":"Ninamma Rai","responses":{"How do you currently research keywords and competitors?":"Right now, i start by looking at the client's industry and business goals to get a baseline. I spend time analyzing search intent and keyword difficulty to make sure we're targeting things we can actually rank for. I also keep a close eye on what the competition is doing, looking at their site structure and which pages are actually pulling traffic, so i can spot any gaps in our own strategy.","Would AI help with content optimization, keyword suggestions, or technical SEO fixes?":"Definitely. Even though we’re doing the manual research now, AI would really speed up the busy work, things like finding related keyword ideas or suggesting better ways to organize a post so it matches what people are actually searching for. It would also be great for catching the simple, easy-to-fix mistakes, like missing titles or page layout issues, that are easy to miss when you're checking everything by hand.","How often do you optimize website content for search engines?":"It's a regular part of my workflow. Every new blog or page gets optimized before it ever goes live, but I also make it a point to go back and check our older content. Sometimes I might get to a specific page a bit late, but I make sure to do the needful and get it up to speed so we don't lose ground to competitors.","Could AI assist in identifying technical SEO issues on the website automatically?":"For sure. Having something that constantly scans for crawl errors, broken links, or slow pages would be a game-changer. Instead of waiting for our next schedule audit to find a problem, AI-driven monitoring would let us jump on issues the moment they pop up.","Could AI provide content gap analysis and ranking improvement suggestions?":"That’s one area where I think AI could really shine. It’s great at cross-referencing competitor sites and SERP data to show us exactly what we’re missing. It would give us a much clearer roadmap for things like long-tail keyword targeting or expanding existing posts to grab more traffic."}},{"name":"Sujata Basnet","responses":{"How do you currently research keywords and competitors?":"I use Chatgpt to research keywords ideas and understand search intent. For competitors research , I analyze top- ranking  results on google serach to see their keywords, heading and content structure.","Would AI help with content optimization, keyword suggestions, or technical SEO fixes?":"yes AI help to suggest Long tail and short tail keyword. And it help us to suggest better schema and meta data while buldings platform or website","How often do you optimize website content for search engines?":"Right now, I’m not optimizing websites for search engines, but in the future, I strive to do it actively and consistently.","Could AI assist in identifying technical SEO issues on the website automatically?":"yes. AI can automatically analyze a websites and help identify SEO problem and suggest improvement","Could AI provide content gap analysis and ranking improvement suggestions?":"For me,AI can suggest related keywords and topics, but it cannot fully do content gap analysis or guarantee ranking improvements, so human strategy is still essential"}},{"name":"Abnish Jha","responses":{"How do you currently research keywords and competitors?":"I use AI in a lot of my workflows including Keyword research and competitor research. However AI is an enabler rather than the primary actor. For instance if I have to audit a new client website. the first thing I do is manual google searches as I think AI is still  not at an stage where it can replace the human eye in the initial research especially when it comes to determining search intent. The next step is to examine the website under a fine microscope using tools like semrush, Screaming Frog, seooptimer, lightroom etc. Then the role of ai comes in the analysis part of that data and then framing a narrative(howver AI still can't frame a narrative right from the beginning so it takes human intervention and strategizing. AI has also reached a stage where it can do tasks effectively if you communicate every thing that you need the way you need it using the data you need. So the data is of paramount importance. I have documented these in detail in this document","Would AI help with content optimization, keyword suggestions, or technical SEO fixes?":"Most definitely, it would. However, it should always be as stages of a well-defined workflow with human-in-the-loop modality. The document shared in the previous reply also talks about this in detail","How often do you optimize website content for search engines?":"Regularly","Could AI assist in identifying technical SEO issues on the website automatically?":"Yes, but at the current stage of AI development requires a lot of human intervention, Can be misguiding if not used in tandem with a tool like screaming frog, in which case it does more harm than good.","Could AI provide content gap analysis and ranking improvement suggestions?":"Probably the best use case of AI currently in SEO, especially if you do your initial homework in seeding the accurate data properly by using it in conjuction with tools like spyfu. Gemini deep research seats head above shoulders compared to others in this particular use case."}}]},{"division":"Graphics | Video Editing","questions":["What type of design work takes the longest time?","Would AI tools help with image generation, background removal, resizing, or design ideas?","Could AI tools help generate multiple variations of designs for A/B testing?","Would AI-generated visual concepts or mood boards speed up design ideation?"],"responses":[{"name":"Sujal Khatri","responses":{"What type of design work takes the longest time?":"Image generation, Finding Premium Mockups & Retouching","Would AI tools help with image generation, background removal, resizing, or design ideas?":"Ai tool like nano banana would be beneficial for a base image generation or a way to refine prompts to feed to such ai tools","Could AI tools help generate multiple variations of designs for A/B testing?":"Yes","Would AI-generated visual concepts or mood boards speed up design ideation?":"Yes"}},{"name":"Roman Maharjan","responses":{"What type of design work takes the longest time?":"Video and image generation and video,image upscale","Would AI tools help with image generation, background removal, resizing, or design ideas?":"yes but still unable to generate exact video we want","Could AI tools help generate multiple variations of designs for A/B testing?":"Yes","Would AI-generated visual concepts or mood boards speed up design ideation?":"Yes"}},{"name":"Prabin Shakya","responses":{"What type of design work takes the longest time?":"Video,voice and image generation and finding templates","Would AI tools help with image generation, background removal, resizing, or design ideas?":"yes but it is still difficult to generate quality video or images","Could AI tools help generate multiple variations of designs for A/B testing?":"Yes","Would AI-generated visual concepts or mood boards speed up design ideation?":"Yes"}},{"name":"Aanya Yadav","responses":{"What type of design work takes the longest time?":"Photo Manipulation, Image Enhancement ,Finding Premium Mockups","Would AI tools help with image generation, background removal, resizing, or design ideas?":"Yes, AI tools handle these tasks quickly, but they’re not always perfectly accurate","Could AI tools help generate multiple variations of designs for A/B testing?":"Yes"}},{"name":"Sandesh Shrestha","responses":{"What type of design work takes the longest time?":"Image generation","Would AI tools help with image generation, background removal, resizing, or design ideas?":"Yes","Could AI tools help generate multiple variations of designs for A/B testing?":"Yes","Would AI-generated visual concepts or mood boards speed up design ideation?":"yes"}}]},{"division":"Finance","questions":["How do you currently manage invoice processing and financial records?","How long does it take to generate financial reports?","Would automated expense categorization, forecasting, or report generation help?","Could AI assist in detecting anomalies or potential fraud in financial transactions?","Could AI help analyze cash flow trends and financial risks more effectively?"],"responses":[{"name":"Sibani","responses":{"How do you currently manage invoice processing and financial records?":"For OAS, currently we are managing both invoice processing and financial records using spreadsheets. We use structured spreadsheet for tracking down sales, purchase, collections, payments records and other important data. We use these to track payments and generate reports by processing and analyzing the data with spreadsheet tools and formulas. For IDA data entry is done on the Tigg software along with spreadsheet management.","How long does it take to generate financial reports?":"Well, it depends on data complexcity and report type, but it usually takes me 2-3 hours to 1-2 days.","Would automated expense categorization, forecasting, or report generation help?":"Yes, it would be helpful. However, for report generation and forecasting, it’s important to verify the outputs, as system errors can sometimes cause issues.","Could AI assist in detecting anomalies or potential fraud in financial transactions?":"I’m not sure, as I have no experience with it.","Could AI help analyze cash flow trends and financial risks more effectively?":"It could be helpful in analyzing trends and risks, but I’m not sure about its effectiveness ."}}]},{"division":"Marketing","questions":["How long does it take to create content?","Do you analyze customer behavior or campaign performance regularly? If yes, how?","Would automated content generation or campaign suggestions help your team?","Could AI help analyze customer behavior and recommend better marketing campaigns?","Would automated email campaign generation and personalization improve engagement?"],"responses":[{"name":"Saurav Kumar Karn","responses":{"How long does it take to create content?":"Generally about 5-10 minutes if I have seen the reference before but may take even upto 30 minutes to come up with decent content if they are served directly","Do you analyze customer behavior or campaign performance regularly? If yes, how?":"Not regularly but twice a week to see what sort of content is performing well and which aren't. I generally go and have look at the insights and look through comments from my personal account if there are any.","Would automated content generation or campaign suggestions help your team?":"Automated content generation can help us walk into a certain direction than having direct impact. Using ai to look through content outline then using our creative brain together with design team would help better. As for Campaign suggestion can be taken with grain of salt as AI tends to generalize the content topics instead of catering towards the client need.","Could AI help analyze customer behavior and recommend better marketing campaigns?":"Yes, they can help on that point but free plan Ai isn't able to recommend better marketing campaign.","Would automated email campaign generation and personalization improve engagement?":"Yes, I think it will."}},{"name":"Archita Agrawal","responses":{"How long does it take to create content?":"there is no fixed time, but generally anywhere between 15-30 minutes. the time taken can depend on the type or concept of the content. Carousels and videos require a little more time compared to static post as they require a comparitively more research.","Do you analyze customer behavior or campaign performance regularly? If yes, how?":"yes, i do analyse campaign performance twice or thrice weekly. Other than ads, I also check insights of the orgnic posts. I use meta business suite inisghts for instagram and facebook. I also check the messages the client receives in their social media,this helps us understand the customer and their requiremrnts and queries.","Would automated content generation or campaign suggestions help your team?":"Ofcourse, automated content generation ot campaign suggestion would be very helpful, specially if combined with customer insights, industry insights as well as ongoing trends. this will help us come up with much better performing campoagns at a faster pace. Automating would speed up the overall process.","Could AI help analyze customer behavior and recommend better marketing campaigns?":"Yes for sure, I have used tools like perplexity and chatgpt for this but havent been able to extract the best results in terms of customer behavior. So,  yes AI can definitely help with that and provide more insight on customer behavior.","Would automated email campaign generation and personalization improve engagement?":"I am unsure about it improving engagement, this is something we will have to test and figure out. we currently do not run email campaigns for our clients. this would be something to test and know."}}]},{"division":"Management","questions":["What business areas would benefit most from automation?","What are your biggest concerns about AI?","Which business processes should be prioritized for AI automation to improve efficiency?","Would AI-powered customer support chatbots or assistants improve service delivery?","What security, compliance, or data privacy concerns must be addressed before adopting AI?"],"responses":[{"name":"pooja dhami","responses":{"What business areas would benefit most from automation?":"Scheduling, reporting (client report and meeting minutes). Task & project Management,","Which business processes should be prioritized for AI automation to improve efficiency?":"Reporting Dashboard","Would AI-powered customer support chatbots or assistants improve service delivery?":"I am unsure about it right now, I dont think it will be that much beneficial","What security, compliance, or data privacy concerns must be addressed before adopting AI?":"Before adopting AI, we need to make sure what and how much information can be shared with the client. giving them the segregated users/information access"}}]}];
+
+    const STOP_WORDS = new Set([
+      "the", "and", "for", "that", "with", "have", "this", "from", "into", "most", "take", "takes", "they",
+      "them", "their", "then", "than", "just", "through", "would", "could", "should", "about", "what", "when",
+      "where", "which", "while", "also", "does", "used", "using", "need", "needs", "like", "some", "such",
+      "more", "very", "much", "been", "because", "being", "make", "makes", "made", "only", "really", "often",
+      "your", "ours", "ourselves", "myself", "my", "our", "its", "it's", "can", "yes", "not", "yet", "all",
+      "but", "are", "is", "was", "were", "had", "has", "how", "who", "out", "too", "did", "across", "each",
+      "tool", "tools", "team", "teams", "work", "works", "task", "tasks", "using", "currently", "would", "help",
+      "helps", "could", "also", "still", "however", "right", "well", "part", "regular", "regularly", "really"
+    ]);
+
+    const THEME_MAP = [
+      { key: "automation_efficiency", label: "Automation and efficiency", terms: ["automation", "automated", "speed", "faster", "productivity", "workflow", "efficient", "time", "reporting"] },
+      { key: "analysis_research", label: "Analysis and research", terms: ["analysis", "research", "scope", "planning", "strategy", "search", "competitor", "keyword", "intent", "audit"] },
+      { key: "engineering_quality", label: "Engineering quality", terms: ["debug", "testing", "test", "bug", "review", "refactor", "code", "quality", "integration"] },
+      { key: "content_seo", label: "Content and SEO", terms: ["content", "seo", "serp", "ranking", "schema", "meta", "blog", "keyword", "traffic"] },
+      { key: "creative_design", label: "Creative and design", terms: ["design", "image", "video", "mockup", "retouching", "layout", "visual", "mood", "animation", "css", "javascript"] },
+      { key: "finance_reporting", label: "Finance and reporting", terms: ["invoice", "financial", "expense", "forecasting", "cash", "fraud", "transaction", "spreadsheet", "report", "payments"] },
+      { key: "customer_marketing", label: "Customer and marketing", terms: ["campaign", "customer", "engagement", "email", "insights", "social", "marketing", "ads", "personalization"] },
+      { key: "governance_risk", label: "Governance and risk", terms: ["security", "privacy", "compliance", "verify", "review", "wrong", "issues", "risk", "human", "beneficial", "concerns"] }
+    ];
+
+    const STATE = {
+      workbook: DEFAULT_WORKBOOK,
+      records: [],
+      activeDivision: "All divisions"
+    };
+
+    function parseCSV(text) {
+      const rows = [];
+      let row = [];
+      let value = "";
+      let inQuotes = false;
+      for (let i = 0; i < text.length; i += 1) {
+        const char = text[i];
+        const next = text[i + 1];
+        if (char === "\"") {
+          if (inQuotes && next === "\"") {
+            value += "\"";
+            i += 1;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === "," && !inQuotes) {
+          row.push(value);
+          value = "";
+        } else if ((char === "\n" || char === "\r") && !inQuotes) {
+          if (char === "\r" && next === "\n") {
+            i += 1;
+          }
+          row.push(value);
+          rows.push(row);
+          row = [];
+          value = "";
+        } else {
+          value += char;
+        }
+      }
+      if (value.length || row.length) {
+        row.push(value);
+        rows.push(row);
+      }
+      return rows;
+    }
+
+    function workbookFromCsv(text) {
+      const rows = parseCSV(text);
+      let header = null;
+      let currentDivision = "Uploaded CSV";
+      let currentRecord = null;
+      const groups = new Map();
+
+      function ensureDivision(name) {
+        if (!groups.has(name)) {
+          groups.set(name, { division: name, questions: [], responses: [] });
+        }
+        return groups.get(name);
+      }
+
+      rows.forEach((inputRow) => {
+        const row = [...inputRow];
+        const first = cleanText(row[0] || "");
+        const isEmpty = row.every((cell) => !cleanText(cell || ""));
+        if (first && /team$/i.test(first) && row.slice(1).every((cell) => !cleanText(cell || ""))) {
+          currentDivision = first.replace(/team$/i, "").trim();
+          ensureDivision(currentDivision);
+          header = null;
+          currentRecord = null;
+          return;
+        }
+        if (first.toLowerCase() === "name") {
+          header = row.filter(Boolean);
+          const division = ensureDivision(currentDivision);
+          division.questions = header.slice(1).filter(Boolean);
+          return;
+        }
+        if (!header || isEmpty) {
+          return;
+        }
+        const division = ensureDivision(currentDivision);
+        if (first) {
+          currentRecord = { name: first, responses: {} };
+          header.slice(1).forEach((question, index) => {
+            const answer = cleanText(row[index + 1] || "");
+            if (question && answer) {
+              currentRecord.responses[question] = answer;
+            }
+          });
+          division.responses.push(currentRecord);
+        } else if (currentRecord) {
+          header.slice(1).forEach((question, index) => {
+            const answer = cleanText(row[index + 1] || "");
+            if (question && answer) {
+              currentRecord.responses[question] = [currentRecord.responses[question], answer].filter(Boolean).join("; ");
+            }
+          });
+        }
+      });
+
+      return [...groups.values()];
+    }
+
+    function cleanText(text) {
+      return String(text || "").replace(/\s+/g, " ").trim();
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function tokenize(text) {
+      return cleanText(text)
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, " ")
+        .split(/\s+/)
+        .filter((token) => token.length > 2 && !STOP_WORDS.has(token));
+    }
+
+    function themeScores(text) {
+      const lower = ` ${cleanText(text).toLowerCase()} `;
+      return THEME_MAP.map((theme) => ({
+        ...theme,
+        score: theme.terms.reduce((sum, term) => sum + (lower.includes(` ${term.toLowerCase()} `) ? 1 : 0), 0)
+      })).filter((theme) => theme.score > 0);
+    }
+
+    function detectPosture(text) {
+      const lower = cleanText(text).toLowerCase();
+      const positive = /(yes|improve|beneficial|helpful|useful|speed|faster|game-changer|shine|productive|save|accelerat)/.test(lower);
+      const cautious = /(however|but|wrong|review|verify|human|not sure|unsure|hard|difficult|misguiding|issues|risk|privacy|security|compliance)/.test(lower);
+      if (positive && cautious) return "Positive with guardrails";
+      if (positive) return "Strongly positive";
+      return "Measured / mixed";
+    }
+
+    function detectRepeatSignal(text) {
+      const lower = cleanText(text).toLowerCase();
+      if (/(repeat|reused|similar|regularly|twice a week|weekly|every new|every page|patterns|initial setup|consistently)/.test(lower) && !/(not really|not yet|no\b|unsure)/.test(lower)) {
+        return "High";
+      }
+      if (/(not really|not yet|no\b|unsure|different)/.test(lower)) {
+        return "Low";
+      }
+      return "Moderate";
+    }
+
+    function enrichWorkbook(workbook) {
+      const flatRecords = [];
+      workbook.forEach((division) => {
+        division.responses.forEach((person) => {
+          const questionEntries = division.questions
+            .map((question) => ({ question, answer: cleanText(person.responses[question] || "") }))
+            .filter((entry) => entry.answer);
+          const joinedText = questionEntries.map((entry) => entry.answer).join(" ");
+          const tokenCounts = tokenize(joinedText).reduce((map, token) => {
+            map[token] = (map[token] || 0) + 1;
+            return map;
+          }, {});
+          flatRecords.push({
+            name: person.name,
+            division: division.division,
+            questionEntries,
+            joinedText,
+            tokenCounts,
+            posture: detectPosture(joinedText),
+            repeatSignal: detectRepeatSignal(joinedText),
+            themes: themeScores(joinedText).sort((a, b) => b.score - a.score).slice(0, 4)
+          });
+        });
+      });
+      return flatRecords;
+    }
+
+    function percent(value, total) {
+      return total ? Math.round((value / total) * 100) : 0;
+    }
+
+    function similarityScore(a, b) {
+      const tokens = new Set([...Object.keys(a.tokenCounts), ...Object.keys(b.tokenCounts)]);
+      let intersection = 0;
+      let union = 0;
+      tokens.forEach((token) => {
+        const left = a.tokenCounts[token] || 0;
+        const right = b.tokenCounts[token] || 0;
+        intersection += Math.min(left, right);
+        union += Math.max(left, right);
+      });
+      return union ? intersection / union : 0;
+    }
+
+    function aggregateThemes(records) {
+      const totals = new Map(THEME_MAP.map((theme) => [theme.key, { ...theme, score: 0 }]));
+      records.forEach((record) => {
+        record.themes.forEach((theme) => {
+          totals.get(theme.key).score += theme.score;
+        });
+      });
+      return [...totals.values()].filter((theme) => theme.score > 0).sort((a, b) => b.score - a.score);
+    }
+
+    function aggregateDivisions(records) {
+      const grouped = records.reduce((map, record) => {
+        if (!map.has(record.division)) map.set(record.division, []);
+        map.get(record.division).push(record);
+        return map;
+      }, new Map());
+      return [...grouped.entries()].map(([division, people]) => ({
+        division,
+        people,
+        positive: people.filter((person) => person.posture !== "Measured / mixed").length,
+        cautious: people.filter((person) => person.posture === "Positive with guardrails").length,
+        repeatedHigh: people.filter((person) => person.repeatSignal === "High").length,
+        themes: aggregateThemes(people).slice(0, 4)
+      }));
+    }
+
+    function findSimilarities(records) {
+      const pairs = [];
+      for (let i = 0; i < records.length; i += 1) {
+        for (let j = i + 1; j < records.length; j += 1) {
+          const left = records[i];
+          const right = records[j];
+          const sharedThemes = left.themes
+            .map((theme) => theme.key)
+            .filter((key) => right.themes.some((theme) => theme.key === key))
+            .map((key) => THEME_MAP.find((theme) => theme.key === key)?.label)
+            .filter(Boolean);
+          pairs.push({ left, right, score: similarityScore(left, right), sharedThemes });
+        }
+      }
+      return pairs.sort((a, b) => b.score - a.score);
+    }
+
+    function buildInsights(records, themes, scopeLabel) {
+      const positive = records.filter((record) => record.posture !== "Measured / mixed").length;
+      const guarded = records.filter((record) => record.posture === "Positive with guardrails").length;
+      const repeated = records.filter((record) => record.repeatSignal === "High").length;
+      const topTheme = themes[0];
+      return [
+        {
+          title: `AI sentiment in ${scopeLabel}`,
+          body: `${positive} of ${records.length} respondents are directionally positive about AI support, and ${guarded} of them explicitly add review, governance, or quality guardrails.`
+        },
+        {
+          title: "Repeatable processes",
+          body: `${repeated} respondents describe recurring workflows, repeated optimization cycles, or reusable patterns. That points to strong automation potential in this scope.`
+        },
+        {
+          title: "Most visible theme",
+          body: topTheme ? `${topTheme.label} is the strongest detected theme in the current view.` : "This view does not have enough signal for one dominant theme."
+        }
+      ];
+    }
+
+    function buildDifferences(records) {
+      const cautious = [...records].filter((record) => record.posture === "Positive with guardrails");
+      const lowRepeat = records.filter((record) => record.repeatSignal === "Low");
+      const topRisk = cautious[0];
+      return [
+        {
+          title: "Most caution-heavy respondent",
+          body: topRisk ? `${topRisk.name} most clearly emphasizes review, governance, or reliability concerns alongside AI benefits.` : "No clearly caution-heavy respondent appears in this view."
+        },
+        {
+          title: "Lower-repeat workflows",
+          body: lowRepeat.length ? `${lowRepeat.map((person) => person.name).join(", ")} describe work that feels less repeatable or harder to template.` : "Most respondents in this view describe work that repeats in some form."
+        },
+        {
+          title: "Different needs behind the same AI interest",
+          body: "Some respondents want speed on execution-heavy tasks, while others are more interested in research, monitoring, reporting, or compliance support. The tabs help keep those differences visible."
+        }
+      ];
+    }
+
+    function filteredRecords() {
+      if (STATE.activeDivision === "All divisions") return STATE.records;
+      return STATE.records.filter((record) => record.division === STATE.activeDivision);
+    }
+
+    function renderTabs() {
+      const divisions = ["All divisions", ...new Set(STATE.records.map((record) => record.division))];
+      document.getElementById("division-tabs").innerHTML = divisions.map((division) => `
+        <button class="tab-button ${division === STATE.activeDivision ? "active" : ""}" data-division="${escapeHtml(division)}">${escapeHtml(division)}</button>
+      `).join("");
+      document.querySelectorAll(".tab-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          STATE.activeDivision = button.dataset.division;
+          renderTabs();
+          renderDashboard();
+        });
+      });
+    }
+
+    function renderDashboard() {
+      const records = filteredRecords();
+      const divisionRollup = aggregateDivisions(STATE.records);
+      const scopedDivisionCount = new Set(records.map((record) => record.division)).size;
+      const themes = aggregateThemes(records);
+      const similarities = findSimilarities(records).slice(0, 5);
+      const insights = buildInsights(records, themes, STATE.activeDivision);
+      const differences = buildDifferences(records);
+      const positiveCount = records.filter((record) => record.posture !== "Measured / mixed").length;
+      const cautiousCount = records.filter((record) => record.posture === "Positive with guardrails").length;
+      const repeatCount = records.filter((record) => record.repeatSignal === "High").length;
+      const avgResponses = records.length ? (records.reduce((sum, record) => sum + record.questionEntries.length, 0) / records.length).toFixed(1) : "0.0";
+
+      document.getElementById("meta").innerHTML = `
+        <span>${STATE.records.length} respondents total</span>
+        <span>${divisionRollup.length} workbook tabs</span>
+        <span>${new Date().toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</span>
+      `;
+
+      document.getElementById("stats").innerHTML = [
+        { label: "Respondents in view", value: records.length, note: `Currently showing ${STATE.activeDivision}.` },
+        { label: "Divisions in view", value: scopedDivisionCount, note: "Switch tabs to isolate one worksheet or compare everyone together." },
+        { label: "Positive to AI", value: `${percent(positiveCount, records.length)}%`, note: "Responses that clearly expect AI to help." },
+        { label: "Guardrail mindset", value: `${percent(cautiousCount, records.length)}%`, note: "Responses that support AI but ask for human checks." },
+        { label: "Avg answers / person", value: avgResponses, note: "Average answered prompts in the current scope." },
+        { label: "Repeatable workflow", value: `${percent(repeatCount, records.length)}%`, note: "Signals of repetition, cadence, or reusable patterns." }
+      ].map((stat) => `
+        <article class="stat-card">
+          <div class="stat-label">${stat.label}</div>
+          <div class="stat-value">${stat.value}</div>
+          <div class="stat-note">${stat.note}</div>
+        </article>
+      `).join("");
+
+      document.getElementById("theme-chips").innerHTML = themes.slice(0, 6).map((theme, index) => `
+        <div class="chip"><strong>${index + 1}</strong><span>${theme.label}</span></div>
+      `).join("") || `<div class="empty">No theme signal yet for this view.</div>`;
+
+      const maxThemeScore = themes[0]?.score || 1;
+      document.getElementById("theme-bars").innerHTML = themes.slice(0, 7).map((theme, index) => `
+        <div class="bar-row">
+          <div class="label">${theme.label}</div>
+          <div class="bar-track"><div class="bar-fill ${index === 1 ? "warn" : index === 2 ? "alt" : ""}" style="width: ${Math.max(8, Math.round((theme.score / maxThemeScore) * 100))}%"></div></div>
+          <div class="value">${theme.score}</div>
+        </div>
+      `).join("") || `<div class="empty">Not enough data to chart themes here.</div>`;
+
+      document.getElementById("insights").innerHTML = insights.map((insight) => `
+        <article class="insight">
+          <h3>${insight.title}</h3>
+          <p>${insight.body}</p>
+        </article>
+      `).join("");
+
+      document.getElementById("divisions").innerHTML = divisionRollup.map((division) => `
+        <article class="division-card">
+          <h3>${division.division}</h3>
+          <p>${division.people.length} respondent${division.people.length === 1 ? "" : "s"} in this tab.</p>
+          <div class="chip-wrap" style="margin-top: 14px;">
+            <div class="chip"><strong>${percent(division.positive, division.people.length)}%</strong><span>positive to AI</span></div>
+            <div class="chip"><strong>${percent(division.repeatedHigh, division.people.length)}%</strong><span>repeat signals</span></div>
+            <div class="chip"><strong>${percent(division.cautious, division.people.length)}%</strong><span>mention guardrails</span></div>
+          </div>
+          <div class="quote">Strongest themes: ${division.themes.length ? division.themes.map((theme) => theme.label).join(", ") : "Not enough signal yet."}</div>
+        </article>
+      `).join("");
+
+      document.getElementById("similarity-cards").innerHTML = similarities.length ? similarities.map((pair) => `
+        <article class="person-card">
+          <h3>${escapeHtml(pair.left.name)} + ${escapeHtml(pair.right.name)}</h3>
+          <p>${pair.sharedThemes.length ? `Shared emphasis: ${escapeHtml(pair.sharedThemes.join(", "))}.` : "These two respondents use notably similar language across their answers."}</p>
+          <div class="score-pill">Similarity score: ${Math.round(pair.score * 100)} / 100</div>
+        </article>
+      `).join("") : `<div class="empty">Need at least two respondents in the current view to compute similarity.</div>`;
+
+      document.getElementById("difference-cards").innerHTML = differences.map((item) => `
+        <article class="person-card">
+          <h3>${item.title}</h3>
+          <p>${item.body}</p>
+        </article>
+      `).join("");
+
+      document.getElementById("explorer-copy").textContent = "All respondents are shown below with their original worksheet questions and answers.";
+
+      document.getElementById("people-cards").innerHTML = STATE.records.map((record) => `
+        <article class="person-card">
+          <h3>${escapeHtml(record.name)}</h3>
+          <p>${escapeHtml(record.division)} • ${escapeHtml(record.posture)} • Repeat signal: ${escapeHtml(record.repeatSignal)}</p>
+          <div class="chip-wrap" style="margin-top: 12px;">
+            ${record.themes.map((theme) => `<div class="chip"><span>${escapeHtml(theme.label)}</span></div>`).join("")}
+          </div>
+          <div class="qa-list">
+            ${record.questionEntries.map((entry) => `
+              <div class="qa-item">
+                <div class="qa-question">${escapeHtml(entry.question)}</div>
+                <div class="qa-answer">${escapeHtml(entry.answer)}</div>
+              </div>
+            `).join("")}
+          </div>
+        </article>
+      `).join("") || `<div class="empty">No respondents found in the workbook.</div>`;
+    }
+
+    function loadWorkbook(workbook) {
+      STATE.workbook = workbook;
+      STATE.records = enrichWorkbook(workbook);
+      if (STATE.activeDivision !== "All divisions" && !STATE.records.some((record) => record.division === STATE.activeDivision)) {
+        STATE.activeDivision = "All divisions";
+      }
+      renderTabs();
+      renderDashboard();
+    }
+
+    document.getElementById("csv-upload").addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const text = await file.text();
+      loadWorkbook(workbookFromCsv(text));
+    });
+
+    function triggerPdfDownload() {
+      document.body.classList.add("printing");
+      window.print();
+    }
+
+    window.addEventListener("afterprint", () => {
+      document.body.classList.remove("printing");
+    });
+
+    document.getElementById("download-pdf").addEventListener("click", () => {
+      triggerPdfDownload();
+    });
+
+    loadWorkbook(DEFAULT_WORKBOOK);
+  </script>
+</body>
+</html>
