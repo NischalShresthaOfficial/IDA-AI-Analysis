@@ -3,18 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Usage Survey Analytics</title>
+  <title>AI Survey Dashboard</title>
   <style>
     :root {
-      --bg: #f4efe7;
-      --bg-strong: #efe4d2;
-      --surface: rgba(255, 252, 247, 0.82);
+      --bg: #f3ecdf;
+      --surface: rgba(255, 252, 246, 0.86);
       --surface-strong: #fffaf2;
       --ink: #1f1b16;
       --muted: #62594f;
       --accent: #0f766e;
       --accent-2: #d97706;
-      --accent-3: #7c3aed;
       --line: rgba(31, 27, 22, 0.1);
       --shadow: 0 18px 50px rgba(73, 51, 24, 0.12);
       --radius: 24px;
@@ -31,8 +29,8 @@
       color: var(--ink);
       background:
         radial-gradient(circle at top left, rgba(15, 118, 110, 0.16), transparent 30%),
-        radial-gradient(circle at top right, rgba(217, 119, 6, 0.15), transparent 25%),
-        linear-gradient(180deg, #f9f4ed 0%, var(--bg) 60%, #f7f0e4 100%);
+        radial-gradient(circle at top right, rgba(217, 119, 6, 0.12), transparent 25%),
+        linear-gradient(180deg, #f9f4ed 0%, var(--bg) 60%, #f6efe4 100%);
       min-height: 100vh;
     }
 
@@ -65,17 +63,16 @@
       content: "";
       position: absolute;
       inset: auto -40px -50px auto;
-      width: 220px;
-      height: 220px;
+      width: 240px;
+      height: 240px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(124, 58, 237, 0.16) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(124, 58, 237, 0.14) 0%, transparent 70%);
       pointer-events: none;
     }
 
     .eyebrow {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
       padding: 8px 14px;
       border-radius: 999px;
       background: rgba(15, 118, 110, 0.08);
@@ -94,85 +91,67 @@
     }
 
     h1 {
-      font-size: clamp(2.2rem, 5vw, 4.5rem);
-      max-width: 10ch;
+      font-size: clamp(2.6rem, 6vw, 5rem);
+      max-width: 8ch;
       margin-top: 18px;
     }
 
-    .hero p {
+    .hero-copy {
       margin: 18px 0 0;
       max-width: 70ch;
       color: var(--muted);
-      font-size: 1.02rem;
+      font-size: 1.04rem;
       line-height: 1.65;
     }
 
-    .toolbar {
-      margin-top: 26px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      align-items: center;
-    }
-
-    .upload {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 18px;
-      border-radius: 999px;
-      background: var(--ink);
-      color: #fff;
-      cursor: pointer;
-      overflow: hidden;
-    }
-
-    .floating-export {
-      position: fixed;
-      right: 22px;
-      bottom: 22px;
-      z-index: 20;
-      border: 0;
-      border-radius: 999px;
-      padding: 14px 18px;
-      background: linear-gradient(135deg, var(--ink), #31403f);
-      color: #fff;
-      box-shadow: 0 18px 40px rgba(31, 27, 22, 0.22);
-      cursor: pointer;
-      font: inherit;
-    }
-
-    .floating-export:hover {
-      transform: translateY(-1px);
-    }
-
-    .upload input {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-    }
-
-    .meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
-    .meta span {
-      padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.7);
-      border-radius: 999px;
-      border: 1px solid var(--line);
-    }
-
-    .grid {
+    .hero-summary {
       display: grid;
-      gap: 18px;
-      margin-top: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin-top: 26px;
+      max-width: 760px;
+    }
+
+    .summary-card,
+    .stat-card,
+    .insight,
+    .person-card,
+    .division-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.76);
+    }
+
+    .summary-card {
+      padding: 14px 16px;
+    }
+
+    .summary-label,
+    .stat-label,
+    .qa-question {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .summary-value {
+      margin-top: 8px;
+      font-size: 1.3rem;
+    }
+
+    .hero-tabs {
+      margin-top: 28px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-tabs p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.6;
     }
 
     .tabs {
@@ -202,45 +181,22 @@
       border-color: var(--ink);
     }
 
+    .grid {
+      display: grid;
+      gap: 18px;
+      margin-top: 20px;
+    }
+
     .stats-grid {
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     }
 
     .two-col {
-      grid-template-columns: 1.2fr 0.8fr;
-    }
-
-    .three-col {
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: 1.1fr 0.9fr;
     }
 
     .panel {
       padding: 24px;
-    }
-
-    .stat-card {
-      padding: 22px;
-      border-radius: var(--radius-sm);
-      background: linear-gradient(180deg, rgba(255,255,255,0.82), rgba(255,250,242,0.96));
-      border: 1px solid var(--line);
-    }
-
-    .stat-label {
-      font-size: 0.88rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-    }
-
-    .stat-value {
-      margin-top: 10px;
-      font-size: clamp(1.9rem, 4vw, 3rem);
-    }
-
-    .stat-note {
-      margin-top: 10px;
-      color: var(--muted);
-      line-height: 1.5;
     }
 
     .section-title {
@@ -254,19 +210,31 @@
     .section-title p {
       margin: 8px 0 0;
       color: var(--muted);
-      max-width: 64ch;
+      max-width: 68ch;
       line-height: 1.6;
     }
 
-    .chip-list,
-    .insight-list,
-    .person-list,
-    .division-list {
-      display: grid;
-      gap: 12px;
+    .stat-card {
+      padding: 22px;
     }
 
-    .chip-wrap {
+    .stat-value {
+      margin-top: 10px;
+      font-size: clamp(1.9rem, 4vw, 3rem);
+    }
+
+    .stat-note,
+    .insight p,
+    .person-card p,
+    .division-card p {
+      margin-top: 10px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .chip-wrap,
+    .division-list,
+    .insight-list {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
@@ -283,31 +251,22 @@
       font-size: 0.95rem;
     }
 
-    .chip strong {
-      font-size: 1rem;
+    .insight-list,
+    .division-list {
+      display: grid;
+      gap: 12px;
     }
 
     .insight,
     .person-card,
     .division-card {
-      border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
       padding: 18px;
-      background: rgba(255, 255, 255, 0.7);
     }
 
     .insight h3,
     .person-card h3,
     .division-card h3 {
       font-size: 1.15rem;
-    }
-
-    .insight p,
-    .person-card p,
-    .division-card p {
-      margin: 10px 0 0;
-      color: var(--muted);
-      line-height: 1.6;
     }
 
     .bar-list {
@@ -321,10 +280,6 @@
       grid-template-columns: 180px 1fr 52px;
       gap: 12px;
       align-items: center;
-    }
-
-    .bar-row .label {
-      font-size: 0.95rem;
     }
 
     .bar-track {
@@ -344,10 +299,6 @@
       background: linear-gradient(90deg, var(--accent-2), #f59e0b);
     }
 
-    .bar-fill.alt {
-      background: linear-gradient(90deg, var(--accent-3), #a855f7);
-    }
-
     .quote {
       margin-top: 14px;
       padding: 14px 16px;
@@ -356,46 +307,6 @@
       border-radius: 0 14px 14px 0;
       color: var(--muted);
       line-height: 1.6;
-    }
-
-    .score-pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 7px 11px;
-      border-radius: 999px;
-      background: rgba(217, 119, 6, 0.1);
-      color: #9a5a03;
-      font-size: 0.85rem;
-      margin-top: 12px;
-    }
-
-    .matrix {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-      font-size: 0.92rem;
-    }
-
-    .matrix th,
-    .matrix td {
-      padding: 12px 10px;
-      border-bottom: 1px solid var(--line);
-      text-align: left;
-      vertical-align: top;
-    }
-
-    .matrix td {
-      line-height: 1.55;
-    }
-
-    .matrix th {
-      color: var(--muted);
-      font-weight: 600;
-    }
-
-    .response-cell {
-      min-width: 240px;
-      white-space: normal;
     }
 
     .people-grid {
@@ -418,25 +329,22 @@
       background: rgba(255,255,255,0.68);
     }
 
-    .qa-question {
-      font-size: 0.88rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-
     .qa-answer {
+      margin-top: 8px;
       line-height: 1.6;
       color: var(--ink);
       white-space: pre-wrap;
     }
 
-    .footnote {
-      margin-top: 18px;
-      color: var(--muted);
-      font-size: 0.92rem;
-      line-height: 1.6;
+    .score-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(217, 119, 6, 0.1);
+      color: #9a5a03;
+      font-size: 0.85rem;
+      margin-top: 12px;
     }
 
     .empty {
@@ -447,8 +355,28 @@
       background: rgba(255,255,255,0.45);
     }
 
+    .floating-export {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 20;
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 18px;
+      background: linear-gradient(135deg, var(--ink), #31403f);
+      color: #fff;
+      box-shadow: 0 18px 40px rgba(31, 27, 22, 0.22);
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .floating-export:hover {
+      transform: translateY(-1px);
+    }
+
     @media (max-width: 900px) {
-      .two-col {
+      .two-col,
+      .people-grid {
         grid-template-columns: 1fr;
       }
 
@@ -456,9 +384,9 @@
         grid-template-columns: 1fr;
       }
 
-      .bar-row .label,
-      .bar-row .value {
-        font-size: 0.92rem;
+      .floating-export {
+        right: 16px;
+        bottom: 16px;
       }
     }
 
@@ -480,7 +408,9 @@
 
       .hero,
       .panel,
+      .summary-card,
       .stat-card,
+      .insight,
       .person-card,
       .division-card,
       .qa-item {
@@ -490,19 +420,20 @@
         border-color: rgba(0, 0, 0, 0.12);
       }
 
-      .floating-export,
-      .upload {
+      .floating-export {
         display: none !important;
       }
 
-      .grid.two-col,
+      .two-col,
       .people-grid {
         grid-template-columns: 1fr;
       }
 
-      .panel,
       .hero,
+      .panel,
+      .summary-card,
       .stat-card,
+      .insight,
       .person-card,
       .division-card,
       .qa-item {
@@ -516,28 +447,16 @@
   <main class="page">
     <section class="hero">
       <div class="eyebrow">AI Survey Dashboard</div>
-      <h1>Static analytics for your team responses.</h1>
-      <p>
-        This dashboard parses your survey workbook, turns free-text responses into theme-level signals,
-        and highlights both division-specific patterns and respondent similarities across the whole dataset.
+      <h1>AI usage across your teams.</h1>
+      <p class="hero-copy">
+        This dashboard summarizes responses from each worksheet tab in your survey file. Use the division filter below
+        to focus the analytics, then scroll to the respondent explorer to read every original answer in plain language.
       </p>
-      <div class="toolbar">
-        <label class="upload">
-          <span>Upload another CSV</span>
-          <input id="csv-upload" type="file" accept=".csv,text/csv">
-        </label>
-        <div class="meta" id="meta"></div>
+      <div class="hero-summary" id="hero-summary"></div>
+      <div class="hero-tabs">
+        <p>Filter the analytics below by division. The Respondent Explorer at the bottom always shows all respondents for easy review.</p>
+        <div class="tabs" id="division-tabs"></div>
       </div>
-    </section>
-
-    <section class="panel" style="margin-top: 20px;">
-      <div class="section-title">
-        <div>
-          <h2>Division tabs</h2>
-          <p>Switch between the full company view and each worksheet tab to see the right division context.</p>
-        </div>
-      </div>
-      <div class="tabs" id="division-tabs"></div>
     </section>
 
     <section class="grid stats-grid" id="stats"></section>
@@ -546,8 +465,8 @@
       <div class="panel">
         <div class="section-title">
           <div>
-            <h2>Shared patterns</h2>
-            <p>High-level themes detected across time sinks, repeated work, and AI opportunity areas.</p>
+            <h2>What this group says most often</h2>
+            <p>These themes are pulled from the responses currently in view, so they shift when you change the division filter.</p>
           </div>
         </div>
         <div class="chip-wrap" id="theme-chips"></div>
@@ -556,8 +475,8 @@
       <div class="panel">
         <div class="section-title">
           <div>
-            <h2>Consensus and caution</h2>
-            <p>Where the team strongly agrees and where responses introduce guardrails or skepticism.</p>
+            <h2>Key takeaways</h2>
+            <p>Short, easy-to-read summaries of what the selected division is saying about AI usage, caution, and opportunities.</p>
           </div>
         </div>
         <div class="insight-list" id="insights"></div>
@@ -567,39 +486,28 @@
     <section class="panel" style="margin-top: 20px;">
       <div class="section-title">
         <div>
-          <h2>Division analytics</h2>
-          <p>Each division card summarizes headcount, repeated-task prevalence, strongest themes, and attitude toward AI assistance.</p>
+          <h2>Division overview</h2>
+          <p>Each card shows the broad pattern for one worksheet tab so you can compare teams side by side.</p>
         </div>
       </div>
       <div class="division-list" id="divisions"></div>
     </section>
 
-    <section class="grid two-col" style="margin-top: 20px;">
-      <div class="panel">
-        <div class="section-title">
-          <div>
-            <h2>Similarity among individuals</h2>
-            <p>Pairs are scored from shared language across all long-form responses, not just one question.</p>
-          </div>
+    <section class="panel" style="margin-top: 20px;">
+      <div class="section-title">
+        <div>
+          <h2>Where responses differ</h2>
+          <p>These notes highlight important differences in readiness, caution, and workflow repeatability for the selected division.</p>
         </div>
-        <div class="person-list" id="similarity-cards"></div>
       </div>
-      <div class="panel">
-        <div class="section-title">
-          <div>
-            <h2>Notable differences</h2>
-            <p>These signals surface contrast in optimism, repeatability, and concern areas regardless of division.</p>
-          </div>
-        </div>
-        <div class="person-list" id="difference-cards"></div>
-      </div>
+      <div class="insight-list" id="difference-cards"></div>
     </section>
 
     <section class="panel" style="margin-top: 20px;">
       <div class="section-title">
         <div>
           <h2>Respondent explorer</h2>
-          <p id="explorer-copy">Every respondent is shown with their full answers so you can inspect the raw survey text directly inside the dashboard.</p>
+          <p>All respondents are shown below with their original worksheet questions and answers.</p>
         </div>
       </div>
       <div class="people-grid" id="people-cards"></div>
@@ -628,7 +536,7 @@
       { key: "creative_design", label: "Creative and design", terms: ["design", "image", "video", "mockup", "retouching", "layout", "visual", "mood", "animation", "css", "javascript"] },
       { key: "finance_reporting", label: "Finance and reporting", terms: ["invoice", "financial", "expense", "forecasting", "cash", "fraud", "transaction", "spreadsheet", "report", "payments"] },
       { key: "customer_marketing", label: "Customer and marketing", terms: ["campaign", "customer", "engagement", "email", "insights", "social", "marketing", "ads", "personalization"] },
-      { key: "governance_risk", label: "Governance and risk", terms: ["security", "privacy", "compliance", "verify", "review", "wrong", "issues", "risk", "human", "beneficial", "concerns"] }
+      { key: "governance_risk", label: "Governance and risk", terms: ["security", "privacy", "compliance", "verify", "review", "wrong", "issues", "risk", "human", "concerns"] }
     ];
 
     const STATE = {
@@ -636,100 +544,6 @@
       records: [],
       activeDivision: "All divisions"
     };
-
-    function parseCSV(text) {
-      const rows = [];
-      let row = [];
-      let value = "";
-      let inQuotes = false;
-      for (let i = 0; i < text.length; i += 1) {
-        const char = text[i];
-        const next = text[i + 1];
-        if (char === "\"") {
-          if (inQuotes && next === "\"") {
-            value += "\"";
-            i += 1;
-          } else {
-            inQuotes = !inQuotes;
-          }
-        } else if (char === "," && !inQuotes) {
-          row.push(value);
-          value = "";
-        } else if ((char === "\n" || char === "\r") && !inQuotes) {
-          if (char === "\r" && next === "\n") {
-            i += 1;
-          }
-          row.push(value);
-          rows.push(row);
-          row = [];
-          value = "";
-        } else {
-          value += char;
-        }
-      }
-      if (value.length || row.length) {
-        row.push(value);
-        rows.push(row);
-      }
-      return rows;
-    }
-
-    function workbookFromCsv(text) {
-      const rows = parseCSV(text);
-      let header = null;
-      let currentDivision = "Uploaded CSV";
-      let currentRecord = null;
-      const groups = new Map();
-
-      function ensureDivision(name) {
-        if (!groups.has(name)) {
-          groups.set(name, { division: name, questions: [], responses: [] });
-        }
-        return groups.get(name);
-      }
-
-      rows.forEach((inputRow) => {
-        const row = [...inputRow];
-        const first = cleanText(row[0] || "");
-        const isEmpty = row.every((cell) => !cleanText(cell || ""));
-        if (first && /team$/i.test(first) && row.slice(1).every((cell) => !cleanText(cell || ""))) {
-          currentDivision = first.replace(/team$/i, "").trim();
-          ensureDivision(currentDivision);
-          header = null;
-          currentRecord = null;
-          return;
-        }
-        if (first.toLowerCase() === "name") {
-          header = row.filter(Boolean);
-          const division = ensureDivision(currentDivision);
-          division.questions = header.slice(1).filter(Boolean);
-          return;
-        }
-        if (!header || isEmpty) {
-          return;
-        }
-        const division = ensureDivision(currentDivision);
-        if (first) {
-          currentRecord = { name: first, responses: {} };
-          header.slice(1).forEach((question, index) => {
-            const answer = cleanText(row[index + 1] || "");
-            if (question && answer) {
-              currentRecord.responses[question] = answer;
-            }
-          });
-          division.responses.push(currentRecord);
-        } else if (currentRecord) {
-          header.slice(1).forEach((question, index) => {
-            const answer = cleanText(row[index + 1] || "");
-            if (question && answer) {
-              currentRecord.responses[question] = [currentRecord.responses[question], answer].filter(Boolean).join("; ");
-            }
-          });
-        }
-      });
-
-      return [...groups.values()];
-    }
 
     function cleanText(text) {
       return String(text || "").replace(/\s+/g, " ").trim();
@@ -771,7 +585,7 @@
 
     function detectRepeatSignal(text) {
       const lower = cleanText(text).toLowerCase();
-      if (/(repeat|reused|similar|regularly|twice a week|weekly|every new|every page|patterns|initial setup|consistently)/.test(lower) && !/(not really|not yet|no\b|unsure)/.test(lower)) {
+      if (/(repeat|reused|similar|regularly|twice a week|weekly|patterns|initial setup|consistently)/.test(lower) && !/(not really|not yet|no\b|unsure)/.test(lower)) {
         return "High";
       }
       if (/(not really|not yet|no\b|unsure|different)/.test(lower)) {
@@ -811,19 +625,6 @@
       return total ? Math.round((value / total) * 100) : 0;
     }
 
-    function similarityScore(a, b) {
-      const tokens = new Set([...Object.keys(a.tokenCounts), ...Object.keys(b.tokenCounts)]);
-      let intersection = 0;
-      let union = 0;
-      tokens.forEach((token) => {
-        const left = a.tokenCounts[token] || 0;
-        const right = b.tokenCounts[token] || 0;
-        intersection += Math.min(left, right);
-        union += Math.max(left, right);
-      });
-      return union ? intersection / union : 0;
-    }
-
     function aggregateThemes(records) {
       const totals = new Map(THEME_MAP.map((theme) => [theme.key, { ...theme, score: 0 }]));
       records.forEach((record) => {
@@ -850,23 +651,6 @@
       }));
     }
 
-    function findSimilarities(records) {
-      const pairs = [];
-      for (let i = 0; i < records.length; i += 1) {
-        for (let j = i + 1; j < records.length; j += 1) {
-          const left = records[i];
-          const right = records[j];
-          const sharedThemes = left.themes
-            .map((theme) => theme.key)
-            .filter((key) => right.themes.some((theme) => theme.key === key))
-            .map((key) => THEME_MAP.find((theme) => theme.key === key)?.label)
-            .filter(Boolean);
-          pairs.push({ left, right, score: similarityScore(left, right), sharedThemes });
-        }
-      }
-      return pairs.sort((a, b) => b.score - a.score);
-    }
-
     function buildInsights(records, themes, scopeLabel) {
       const positive = records.filter((record) => record.posture !== "Measured / mixed").length;
       const guarded = records.filter((record) => record.posture === "Positive with guardrails").length;
@@ -874,36 +658,37 @@
       const topTheme = themes[0];
       return [
         {
-          title: `AI sentiment in ${scopeLabel}`,
-          body: `${positive} of ${records.length} respondents are directionally positive about AI support, and ${guarded} of them explicitly add review, governance, or quality guardrails.`
+          title: "Overall AI attitude",
+          body: `${positive} of ${records.length} respondents in ${scopeLabel} speak positively about AI support. ${guarded ? `${guarded} of them still stress review, accuracy, or risk checks.` : "Very few in this view raise strong guardrail concerns."}`
         },
         {
-          title: "Repeatable processes",
-          body: `${repeated} respondents describe recurring workflows, repeated optimization cycles, or reusable patterns. That points to strong automation potential in this scope.`
+          title: "Where AI looks most useful",
+          body: topTheme ? `${topTheme.label} appears most often in the selected responses, which suggests that this is where people most clearly see pressure or opportunity.` : "No single theme clearly dominates this view." 
         },
         {
-          title: "Most visible theme",
-          body: topTheme ? `${topTheme.label} is the strongest detected theme in the current view.` : "This view does not have enough signal for one dominant theme."
+          title: "How repeatable the work feels",
+          body: `${repeated} respondents mention repeated workflows, recurring optimization, or reusable patterns. That usually signals stronger automation potential.`
         }
       ];
     }
 
     function buildDifferences(records) {
-      const cautious = [...records].filter((record) => record.posture === "Positive with guardrails");
+      const cautious = records.filter((record) => record.posture === "Positive with guardrails");
       const lowRepeat = records.filter((record) => record.repeatSignal === "Low");
-      const topRisk = cautious[0];
+      const designHeavy = records.filter((record) => record.themes.some((theme) => theme.key === "creative_design"));
+      const researchHeavy = records.filter((record) => record.themes.some((theme) => theme.key === "analysis_research"));
       return [
         {
-          title: "Most caution-heavy respondent",
-          body: topRisk ? `${topRisk.name} most clearly emphasizes review, governance, or reliability concerns alongside AI benefits.` : "No clearly caution-heavy respondent appears in this view."
+          title: "Most caution-heavy voice",
+          body: cautious.length ? `${cautious[0].name} most clearly balances AI interest with concerns about quality, review, privacy, or long-term reliability.` : "This view has very little strong caution compared with the overall positive sentiment."
         },
         {
-          title: "Lower-repeat workflows",
-          body: lowRepeat.length ? `${lowRepeat.map((person) => person.name).join(", ")} describe work that feels less repeatable or harder to template.` : "Most respondents in this view describe work that repeats in some form."
+          title: "Less repeatable workflows",
+          body: lowRepeat.length ? `${lowRepeat.map((person) => person.name).join(", ")} describe work that feels less repetitive, which usually means AI support should focus more on research, analysis, or guidance than on templates alone.` : "Most respondents in this view describe work that repeats in some form."
         },
         {
-          title: "Different needs behind the same AI interest",
-          body: "Some respondents want speed on execution-heavy tasks, while others are more interested in research, monitoring, reporting, or compliance support. The tabs help keep those differences visible."
+          title: "Different kinds of AI demand",
+          body: designHeavy.length && researchHeavy.length ? `${designHeavy[0].name} leans more toward creative execution support, while ${researchHeavy[0].name} reflects a stronger need for analysis, research, or decision support.` : "The responses show demand for AI in more than one shape, but one contrast does not dominate this view."
         }
       ];
     }
@@ -930,29 +715,34 @@
     function renderDashboard() {
       const records = filteredRecords();
       const divisionRollup = aggregateDivisions(STATE.records);
-      const scopedDivisionCount = new Set(records.map((record) => record.division)).size;
       const themes = aggregateThemes(records);
-      const similarities = findSimilarities(records).slice(0, 5);
       const insights = buildInsights(records, themes, STATE.activeDivision);
       const differences = buildDifferences(records);
       const positiveCount = records.filter((record) => record.posture !== "Measured / mixed").length;
       const cautiousCount = records.filter((record) => record.posture === "Positive with guardrails").length;
       const repeatCount = records.filter((record) => record.repeatSignal === "High").length;
       const avgResponses = records.length ? (records.reduce((sum, record) => sum + record.questionEntries.length, 0) / records.length).toFixed(1) : "0.0";
+      const scopeDivisionCount = new Set(records.map((record) => record.division)).size;
 
-      document.getElementById("meta").innerHTML = `
-        <span>${STATE.records.length} respondents total</span>
-        <span>${divisionRollup.length} workbook tabs</span>
-        <span>${new Date().toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</span>
-      `;
+      document.getElementById("hero-summary").innerHTML = [
+        { label: "Total respondents", value: STATE.records.length },
+        { label: "Workbook tabs", value: divisionRollup.length },
+        { label: "Current view", value: STATE.activeDivision },
+        { label: "Date", value: new Date().toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) }
+      ].map((item) => `
+        <div class="summary-card">
+          <div class="summary-label">${item.label}</div>
+          <div class="summary-value">${escapeHtml(item.value)}</div>
+        </div>
+      `).join("");
 
       document.getElementById("stats").innerHTML = [
-        { label: "Respondents in view", value: records.length, note: `Currently showing ${STATE.activeDivision}.` },
-        { label: "Divisions in view", value: scopedDivisionCount, note: "Switch tabs to isolate one worksheet or compare everyone together." },
+        { label: "Respondents in view", value: records.length, note: "People included in the current division filter." },
+        { label: "Divisions in view", value: scopeDivisionCount, note: "One division when filtered, all six when viewing the full company." },
         { label: "Positive to AI", value: `${percent(positiveCount, records.length)}%`, note: "Responses that clearly expect AI to help." },
-        { label: "Guardrail mindset", value: `${percent(cautiousCount, records.length)}%`, note: "Responses that support AI but ask for human checks." },
-        { label: "Avg answers / person", value: avgResponses, note: "Average answered prompts in the current scope." },
-        { label: "Repeatable workflow", value: `${percent(repeatCount, records.length)}%`, note: "Signals of repetition, cadence, or reusable patterns." }
+        { label: "Guardrail mindset", value: `${percent(cautiousCount, records.length)}%`, note: "Responses that support AI but still ask for checks." },
+        { label: "Repeatable workflow", value: `${percent(repeatCount, records.length)}%`, note: "Signals of recurring work or reusable patterns." },
+        { label: "Average answers", value: avgResponses, note: "Average number of answered prompts per person." }
       ].map((stat) => `
         <article class="stat-card">
           <div class="stat-label">${stat.label}</div>
@@ -963,16 +753,16 @@
 
       document.getElementById("theme-chips").innerHTML = themes.slice(0, 6).map((theme, index) => `
         <div class="chip"><strong>${index + 1}</strong><span>${theme.label}</span></div>
-      `).join("") || `<div class="empty">No theme signal yet for this view.</div>`;
+      `).join("") || `<div class="empty">No strong theme signal is available for this view yet.</div>`;
 
       const maxThemeScore = themes[0]?.score || 1;
       document.getElementById("theme-bars").innerHTML = themes.slice(0, 7).map((theme, index) => `
         <div class="bar-row">
-          <div class="label">${theme.label}</div>
-          <div class="bar-track"><div class="bar-fill ${index === 1 ? "warn" : index === 2 ? "alt" : ""}" style="width: ${Math.max(8, Math.round((theme.score / maxThemeScore) * 100))}%"></div></div>
-          <div class="value">${theme.score}</div>
+          <div>${theme.label}</div>
+          <div class="bar-track"><div class="bar-fill ${index === 1 ? "warn" : ""}" style="width: ${Math.max(8, Math.round((theme.score / maxThemeScore) * 100))}%"></div></div>
+          <div>${theme.score}</div>
         </div>
-      `).join("") || `<div class="empty">Not enough data to chart themes here.</div>`;
+      `).join("") || `<div class="empty">Not enough response volume to chart themes here.</div>`;
 
       document.getElementById("insights").innerHTML = insights.map((insight) => `
         <article class="insight">
@@ -984,32 +774,22 @@
       document.getElementById("divisions").innerHTML = divisionRollup.map((division) => `
         <article class="division-card">
           <h3>${division.division}</h3>
-          <p>${division.people.length} respondent${division.people.length === 1 ? "" : "s"} in this tab.</p>
+          <p>${division.people.length} respondent${division.people.length === 1 ? "" : "s"} in this worksheet tab.</p>
           <div class="chip-wrap" style="margin-top: 14px;">
             <div class="chip"><strong>${percent(division.positive, division.people.length)}%</strong><span>positive to AI</span></div>
             <div class="chip"><strong>${percent(division.repeatedHigh, division.people.length)}%</strong><span>repeat signals</span></div>
             <div class="chip"><strong>${percent(division.cautious, division.people.length)}%</strong><span>mention guardrails</span></div>
           </div>
-          <div class="quote">Strongest themes: ${division.themes.length ? division.themes.map((theme) => theme.label).join(", ") : "Not enough signal yet."}</div>
+          <div class="quote">Most visible themes: ${division.themes.length ? division.themes.map((theme) => theme.label).join(", ") : "Not enough signal yet."}</div>
         </article>
       `).join("");
 
-      document.getElementById("similarity-cards").innerHTML = similarities.length ? similarities.map((pair) => `
-        <article class="person-card">
-          <h3>${escapeHtml(pair.left.name)} + ${escapeHtml(pair.right.name)}</h3>
-          <p>${pair.sharedThemes.length ? `Shared emphasis: ${escapeHtml(pair.sharedThemes.join(", "))}.` : "These two respondents use notably similar language across their answers."}</p>
-          <div class="score-pill">Similarity score: ${Math.round(pair.score * 100)} / 100</div>
-        </article>
-      `).join("") : `<div class="empty">Need at least two respondents in the current view to compute similarity.</div>`;
-
       document.getElementById("difference-cards").innerHTML = differences.map((item) => `
-        <article class="person-card">
+        <article class="insight">
           <h3>${item.title}</h3>
           <p>${item.body}</p>
         </article>
       `).join("");
-
-      document.getElementById("explorer-copy").textContent = "All respondents are shown below with their original worksheet questions and answers.";
 
       document.getElementById("people-cards").innerHTML = STATE.records.map((record) => `
         <article class="person-card">
@@ -1030,23 +810,6 @@
       `).join("") || `<div class="empty">No respondents found in the workbook.</div>`;
     }
 
-    function loadWorkbook(workbook) {
-      STATE.workbook = workbook;
-      STATE.records = enrichWorkbook(workbook);
-      if (STATE.activeDivision !== "All divisions" && !STATE.records.some((record) => record.division === STATE.activeDivision)) {
-        STATE.activeDivision = "All divisions";
-      }
-      renderTabs();
-      renderDashboard();
-    }
-
-    document.getElementById("csv-upload").addEventListener("change", async (event) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      const text = await file.text();
-      loadWorkbook(workbookFromCsv(text));
-    });
-
     function triggerPdfDownload() {
       document.body.classList.add("printing");
       window.print();
@@ -1060,7 +823,9 @@
       triggerPdfDownload();
     });
 
-    loadWorkbook(DEFAULT_WORKBOOK);
+    STATE.records = enrichWorkbook(STATE.workbook);
+    renderTabs();
+    renderDashboard();
   </script>
 </body>
 </html>
